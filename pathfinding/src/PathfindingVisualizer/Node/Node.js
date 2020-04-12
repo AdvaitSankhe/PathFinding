@@ -1,6 +1,6 @@
 import React from "react";
 import "./Node.css";
-const Node = props => {
+const Node = (props) => {
   return (
     <div
       className={`node ${props.isStart ? "node-start" : ""} ${
@@ -10,7 +10,6 @@ const Node = props => {
       } ${props.isShortestPath ? "node-shortestpath" : ""}`}
       onMouseDown={() => {
         if (props.mode == "wall") props.onMouseDown(props.i, props.j);
-        if (props.mode == "start") props.onStart(props.i, props.j);
       }}
       onMouseUp={() => {
         props.onMouseUp();
