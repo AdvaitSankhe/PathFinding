@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import "./PathfindingVisualizer.css";
 import Node from "./Node/Node";
 import { djikstra, getNodesInShortestPath } from "../algorithms/djikstra";
+import { divide, setBorders } from "../algorithms/maze";
 
-const height = 25;
+const height = 21;
 const width = 32;
 const getNewGridWithWallToggled = (grid, i, j) => {
   const new_grid = grid.slice();
@@ -54,11 +55,26 @@ const PathfindingVisualizer = (props) => {
 
   const [grid, setGrid] = useState(createGrid());
   const [mousepressed, setMousePressed] = useState(false);
+  const [isVisualized, setIsVisualized] = useState(false);
 
   const getNewGridWithStartToggled = (x, y) => {
     let new_grid = grid.slice();
     for (let i = 0; i < height; i++) {
       for (let j = 0; j < width; j++) {
+        if (i == x && j == y) new_grid[i][j].isStart = true;
+        else new_grid[i][j].isStart = false;
+      }
+    }
+    return new_grid;
+  };
+  const getNewGridWithVisitedCleared = (x, y) => {
+    let new_grid = grid.slice();
+    for (let i = 0; i < height; i++) {
+      for (let j = 0; j < width; j++) {
+        new_grid[i][j].isVisited = false;
+        new_grid[i][j].distance = Infinity;
+        new_grid[i][j].isShortestPath = false;
+        new_grid[i][j].parent = null;
         if (i == x && j == y) new_grid[i][j].isStart = true;
         else new_grid[i][j].isStart = false;
       }
@@ -75,6 +91,85 @@ const PathfindingVisualizer = (props) => {
     }
     return new_grid;
   };
+
+  const handleMouseUp = () => {
+    setFinishMode(false);
+    setStartMode(false);
+    setMousePressed(false);
+  };
+  //Defining functions here
+  const animateShortestPath = (nodesInShortestPath) => {
+    for (let i = 0; i < nodesInShortestPath.length; i++) {
+      if (!isVisualized) {
+        setTimeout(() => {
+          let element = nodesInShortestPath[i];
+          let new_grid = grid.slice();
+          const newNode = {
+            ...element,
+            isShortestPath: true,
+          };
+          new_grid[element.i][element.j] = newNode;
+          setGrid(new_grid);
+        }, 30 * i);
+      } else {
+        let element = nodesInShortestPath[i];
+        let new_grid = grid.slice();
+        const newNode = {
+          ...element,
+          isShortestPath: true,
+        };
+        new_grid[element.i][element.j] = newNode;
+        setGrid(new_grid);
+      }
+    }
+  };
+
+  const animateDjikstra = (visitedStack, nodesInShortestPath) => {
+    for (let i = 0; i <= visitedStack.length; i++) {
+      if (!isVisualized) {
+        setTimeout(() => {
+          if (i === visitedStack.length) {
+            animateShortestPath(nodesInShortestPath);
+            return;
+          }
+          let element = visitedStack[i];
+          let new_grid = grid.slice();
+          const newNode = {
+            ...element,
+            isVisited: true,
+          };
+          console.log("gwrinn");
+          new_grid[element.i][element.j] = newNode;
+          setGrid(new_grid);
+        }, 30 * i);
+      } else {
+        if (i === visitedStack.length) {
+          animateShortestPath(nodesInShortestPath);
+          return;
+        }
+        let element = visitedStack[i];
+        let new_grid = grid.slice();
+        const newNode = {
+          ...element,
+          isVisited: true,
+        };
+        console.log("gwrinn");
+        new_grid[element.i][element.j] = newNode;
+        setGrid(new_grid);
+      }
+    }
+  };
+
+  const visualizeDjikstra = (i = START_NODE_I, j = START_NODE_J) => {
+    const startNode = grid[i][j];
+    const finishNode = grid[FINISH_NODE_I][FINISH_NODE_J];
+    const visitedStack = djikstra(grid, startNode, finishNode);
+    const nodesInShortestPath = getNodesInShortestPath(finishNode);
+    console.log(nodesInShortestPath);
+    animateDjikstra(visitedStack, nodesInShortestPath);
+    if (!isVisualized) setIsVisualized(true);
+  };
+
   const handleMouseDown = (i, j) => {
     if (i == START_NODE_I && j == START_NODE_J) {
       setMousePressed(true);
@@ -90,11 +185,14 @@ const PathfindingVisualizer = (props) => {
     setMousePressed(true);
   };
   const handleMouseEnter = (i, j) => {
-    console.log("entered ", i, j);
     if (startMode) {
       setSTART_NODE_I(i);
       setSTART_NODE_J(j);
       setGrid(getNewGridWithStartToggled(i, j));
+      if (isVisualized) {
+        setGrid(getNewGridWithVisitedCleared(i, j));
+        visualizeDjikstra(i, j);
+      }
       return;
     }
     if (finishMode) {
@@ -108,63 +206,35 @@ const PathfindingVisualizer = (props) => {
       setGrid(getNewGridWithWallToggled(grid, i, j));
     }
   };
-
-  const handleMouseUp = () => {
-    setFinishMode(false);
-    setStartMode(false);
-    setMousePressed(false);
-  };
-  //Defining functions here
-  const animateShortestPath = (nodesInShortestPath) => {
-    for (let i = 0; i < nodesInShortestPath.length; i++) {
+  const animateMaze = (finalWalls) => {
+    for (let i = 0; i < finalWalls.length; i++)
       setTimeout(() => {
-        let element = nodesInShortestPath[i];
+        let element = finalWalls[i];
         let new_grid = grid.slice();
         const newNode = {
           ...element,
-          isShortestPath: true,
+          isWall: true,
         };
         new_grid[element.i][element.j] = newNode;
         setGrid(new_grid);
       }, 30 * i);
-    }
   };
-  const animateDjikstra = (visitedStack, nodesInShortestPath) => {
-    for (let i = 0; i <= visitedStack.length; i++) {
-      setTimeout(() => {
-        if (i === visitedStack.length) {
-          animateShortestPath(nodesInShortestPath);
-          return;
-        }
-        let element = visitedStack[i];
-        let new_grid = grid.slice();
-        const newNode = {
-          ...element,
-          isVisited: true,
-        };
-        console.log("gwrinn");
-        new_grid[element.i][element.j] = newNode;
-        setGrid(new_grid);
-      }, 30 * i);
-    }
+  const maze = (left, right, up, down, grid) => {
+    let createdwalls = [];
+    //setBorders(height, width, grid);
+    let finalWalls = divide(left, right, up, down, grid, createdwalls, 1);
+    animateMaze(finalWalls);
   };
 
-  const visualizeDjikstra = () => {
-    const startNode = grid[START_NODE_I][START_NODE_J];
-    const finishNode = grid[FINISH_NODE_I][FINISH_NODE_J];
-    const visitedStack = djikstra(grid, startNode, finishNode);
-    const nodesInShortestPath = getNodesInShortestPath(finishNode);
-    console.log(nodesInShortestPath);
-    animateDjikstra(visitedStack, nodesInShortestPath);
-  };
   ////
   ////
   //rendering
   return (
     <div className="grid">
-      <button onClick={() => visualizeDjikstra()} className="button-djikstra">
+      <button onClick={() => visualizeDjikstra()} className="">
         Djikstra
       </button>
+      <button onClick={() => maze(0, width, 0, height, grid, 1)}>maze</button>
 
       {grid.map((row, rowId) => {
         return (
