@@ -24,8 +24,13 @@ const divide = (left, right, up, down, grid, createdwalls, flag) => {
         //console.log(createdwalls);
       }
     }
-    divide(left, division_line - 1, up, down, grid, createdwalls, 0);
-    divide(division_line + 1, right, up, down, grid, createdwalls, 0);
+    createdwalls.concat(
+      divide(left, division_line - 1, up, down, grid, createdwalls, 0)
+    );
+
+    createdwalls.concat(
+      divide(division_line + 1, right, up, down, grid, createdwalls, 0)
+    );
   } else {
     const division_line = Math.floor(Math.random() * (down - up - 1)) + up + 1;
     const gap = Math.floor(Math.random() * (right - left - 1)) + left;
@@ -42,8 +47,12 @@ const divide = (left, right, up, down, grid, createdwalls, flag) => {
         createdwalls.push(grid[division_line][i]);
       }
     }
-    divide(left, right, up, division_line - 1, grid, createdwalls, 1);
-    divide(left, right, division_line + 1, down, grid, createdwalls, 1);
+    createdwalls.concat(
+      divide(left, right, up, division_line - 1, grid, createdwalls, 1)
+    );
+    createdwalls.concat(
+      divide(left, right, division_line + 1, down, grid, createdwalls, 1)
+    );
   }
   return createdwalls;
 };

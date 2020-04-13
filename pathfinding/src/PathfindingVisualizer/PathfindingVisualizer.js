@@ -3,6 +3,7 @@ import "./PathfindingVisualizer.css";
 import Node from "./Node/Node";
 import { djikstra, getNodesInShortestPath } from "../algorithms/djikstra";
 import { divide, setBorders } from "../algorithms/maze";
+import dfs_main from "../algorithms/dfs";
 
 const height = 21;
 const width = 32;
@@ -226,6 +227,50 @@ const PathfindingVisualizer = (props) => {
     animateMaze(finalWalls);
   };
 
+  const animateDfs = (visitedNodes, finishNode) => {
+    let flag = true;
+    for (let i = 0; i < visitedNodes.length; i++) {
+      setTimeout(() => {
+        console.log(flag);
+        let new_grid = grid.slice();
+        let element = visitedNodes[i];
+        if (new_grid[element.i][element.j].isVisited == false && flag) {
+          new_grid[element.i][element.j].isVisited = true;
+        } else {
+          if (flag) new_grid[element.i][element.j].isVisited = false;
+          else {
+            new_grid[element.i][element.j].isVisited = false;
+            new_grid[element.i][element.j].isShortestPath = true;
+          }
+        }
+
+        if (element.i == finishNode.i && element.j == finishNode.j)
+          flag = false;
+        setGrid(new_grid);
+      }, 30 * i);
+    }
+  };
+  const visualizedfs = () => {
+    const startNode = grid[START_NODE_I][START_NODE_J];
+    const finishNode = grid[FINISH_NODE_I][FINISH_NODE_J];
+    console.log(startNode);
+    let new_grid = grid.slice();
+    const visitedNodes = dfs_main(startNode, finishNode, new_grid)[0];
+    new_grid = grid.slice();
+    for (let i = 0; i < new_grid.length; i++) {
+      for (let j = 0; j < new_grid[i].length; j++)
+        new_grid[i][j].isVisited = false;
+    }
+    animateDfs(visitedNodes, finishNode);
+    new_grid = grid.slice();
+    for (let i = 0; i < new_grid.length; i++) {
+      for (let j = 0; j < new_grid[i].length; j++)
+        if (new_grid[i][j].isVisited) new_grid[i][j].isShortestPath = true;
+    }
+
+    setGrid(new_grid);
+  };
+
   ////
   ////
   //rendering
@@ -235,6 +280,7 @@ const PathfindingVisualizer = (props) => {
         Djikstra
       </button>
       <button onClick={() => maze(0, width, 0, height, grid, 1)}>maze</button>
+      <button onClick={() => visualizedfs()}>DFS</button>
 
       {grid.map((row, rowId) => {
         return (

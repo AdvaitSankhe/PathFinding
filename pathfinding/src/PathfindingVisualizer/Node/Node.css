@@ -14,12 +14,13 @@
 .node-wall:hover {
   transform: scale(1.4);
 }
+
+.node-visited {
+  background-color: #13a699;
+}
 .node-shortestpath {
   background-color: #ffd708;
   border-color: #ffd708;
-}
-.node-visited {
-  background-color: #13a699;
 }
 .node-start {
   background-color: #e04255;

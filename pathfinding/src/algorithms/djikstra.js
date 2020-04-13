@@ -1,4 +1,4 @@
-const getUnvisitedNeighbours = (node, grid) => {
+const getNeighbours = (node, grid) => {
   const neighbours = [];
   if (node.i > 0) neighbours.push(grid[node.i - 1][node.j]);
   if (node.i < grid.length - 1) neighbours.push(grid[node.i + 1][node.j]);
@@ -8,8 +8,8 @@ const getUnvisitedNeighbours = (node, grid) => {
   return neighbours;
 };
 
-const updateUnvisitedNeighbours = (node, grid) => {
-  const neighbours = getUnvisitedNeighbours(node, grid);
+const updateNeighbours = (node, grid) => {
+  const neighbours = getNeighbours(node, grid);
   for (const neighbour of neighbours) {
     console.log(node, neighbour);
     neighbour.distance = node.distance + 1;
@@ -17,7 +17,7 @@ const updateUnvisitedNeighbours = (node, grid) => {
       neighbour.parent = node;
   }
 };
-const getAllNodes = grid => {
+const getAllNodes = (grid) => {
   const allnodes = [];
   for (let i = 0; i < grid.length; i++) {
     for (let j = 0; j < grid[i].length; j++) allnodes.push(grid[i][j]);
@@ -42,11 +42,11 @@ const djikstra = (grid, startNode, finishNode) => {
     visitedStack.push(closestNode);
     //closestNode.isVisited = true;
     if (closestNode === finishNode) return visitedStack;
-    updateUnvisitedNeighbours(closestNode, grid);
+    updateNeighbours(closestNode, grid);
   }
 };
 
-const getNodesInShortestPath = finishNode => {
+const getNodesInShortestPath = (finishNode) => {
   console.log("SHORTEST PATH EXECUTE");
   const nodesInShortestPath = [];
   let currentNode = finishNode;
