@@ -15,12 +15,27 @@
   transform: scale(1.4);
 }
 
-.node-visited {
-  background-color: #13a699;
+.node-backtracked {
+  background-color: #f0ec73;
+  opacity: 0.4;
 }
 .node-shortestpath {
   background-color: #ffd708;
-  border-color: #ffd708;
+  border-color: #98521a;
+}
+.node-visited {
+  background-color: #13a699;
+  animation-name: test;
+  animation-duration: 0.2s;
+}
+@keyframes test {
+  50% {
+    background-color: springgreen;
+  }
+}
+.node-current {
+  background-image: url("./doge.png");
+  background-size: cover;
 }
 .node-start {
   background-color: #e04255;

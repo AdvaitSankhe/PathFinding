@@ -22,8 +22,6 @@ const dfs = (grid, finishNode) => {
   }
   startNode.isVisited = true;
 
-  console.log(startNode);
-  console.log(visitedStack);
   const neighbours = getNeighbours(startNode, grid);
   neighbours.sort(() => Math.random() - 0.5);
 

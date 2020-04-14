@@ -7,7 +7,9 @@ const Node = (props) => {
         props.isEnd ? "node-end" : ""
       } ${props.isVisited ? "node-visited" : ""} ${
         props.isWall ? "node-wall" : ""
-      } ${props.isShortestPath ? "node-shortestpath" : ""}`}
+      } ${props.isShortestPath ? "node-shortestpath" : ""} ${
+        props.isBacktracked ? "node-backtracked" : ""
+      } ${props.isCurrent ? "node-current" : ""}`}
       onMouseDown={() => {
         if (props.mode == "wall") props.onMouseDown(props.i, props.j);
       }}

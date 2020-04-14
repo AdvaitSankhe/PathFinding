@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./PathfindingVisualizer.css";
 import Node from "./Node/Node";
 import { djikstra, getNodesInShortestPath } from "../algorithms/djikstra";
+import { astar, getNodesInShortestPathAstar } from "../algorithms/astar";
 import { divide, setBorders } from "../algorithms/maze";
 import dfs_main from "../algorithms/dfs";
 
@@ -38,6 +39,11 @@ const PathfindingVisualizer = (props) => {
       isWall: false,
       isShortestPath: false,
       mode: "wall",
+      isBacktracked: false,
+      isCurrent: false,
+      g_cost: Infinity,
+      h_cost: Infinity,
+      f_cost: Infinity,
     };
     return my_node;
   };
@@ -108,9 +114,11 @@ const PathfindingVisualizer = (props) => {
           const newNode = {
             ...element,
             isShortestPath: true,
+            isCurrent: true,
           };
           new_grid[element.i][element.j] = newNode;
           setGrid(new_grid);
+          new_grid[element.i][element.j].isCurrent = false;
         }, 30 * i);
       } else {
         let element = nodesInShortestPath[i];
@@ -138,10 +146,12 @@ const PathfindingVisualizer = (props) => {
           const newNode = {
             ...element,
             isVisited: true,
+            isCurrent: true,
           };
           console.log("gwrinn");
           new_grid[element.i][element.j] = newNode;
           setGrid(new_grid);
+          new_grid[element.i][element.j].isCurrent = false;
         }, 30 * i);
       } else {
         if (i === visitedStack.length) {
@@ -231,14 +241,16 @@ const PathfindingVisualizer = (props) => {
     let flag = true;
     for (let i = 0; i < visitedNodes.length; i++) {
       setTimeout(() => {
-        console.log(flag);
         let new_grid = grid.slice();
         let element = visitedNodes[i];
+        new_grid[element.i][element.j].isCurrent = true;
         if (new_grid[element.i][element.j].isVisited == false && flag) {
           new_grid[element.i][element.j].isVisited = true;
         } else {
-          if (flag) new_grid[element.i][element.j].isVisited = false;
-          else {
+          if (flag) {
+            new_grid[element.i][element.j].isVisited = false;
+            new_grid[element.i][element.j].isBacktracked = true;
+          } else {
             new_grid[element.i][element.j].isVisited = false;
             new_grid[element.i][element.j].isShortestPath = true;
           }
@@ -246,8 +258,10 @@ const PathfindingVisualizer = (props) => {
 
         if (element.i == finishNode.i && element.j == finishNode.j)
           flag = false;
+        console.log(new_grid[element.i][element.j]);
         setGrid(new_grid);
-      }, 30 * i);
+        new_grid[element.i][element.j].isCurrent = false;
+      }, 50 * i);
     }
   };
   const visualizedfs = () => {
@@ -262,13 +276,51 @@ const PathfindingVisualizer = (props) => {
         new_grid[i][j].isVisited = false;
     }
     animateDfs(visitedNodes, finishNode);
-    new_grid = grid.slice();
-    for (let i = 0; i < new_grid.length; i++) {
-      for (let j = 0; j < new_grid[i].length; j++)
-        if (new_grid[i][j].isVisited) new_grid[i][j].isShortestPath = true;
-    }
+  };
 
-    setGrid(new_grid);
+  const animateShortestPathAstar = (nodesInShortestPathAstar) => {
+    for (let i = 0; i < nodesInShortestPathAstar.length; i++) {
+      setTimeout(() => {
+        let element = nodesInShortestPathAstar[i];
+        let new_grid = grid.slice();
+        const newNode = {
+          ...element,
+          isShortestPath: true,
+          isCurrent: true,
+        };
+        new_grid[element.i][element.j] = newNode;
+        setGrid(new_grid);
+        new_grid[element.i][element.j].isCurrent = false;
+      }, 30 * i);
+    }
+  };
+  const animateAstar = (visitedStack, nodesInShortestPathAstar) => {
+    for (let i = 0; i <= visitedStack.length; i++) {
+      setTimeout(() => {
+        if (i == visitedStack.length) {
+          animateShortestPathAstar(nodesInShortestPathAstar);
+          return;
+        }
+        let element = visitedStack[i];
+        let new_grid = grid.slice();
+        const newNode = {
+          ...element,
+          isVisited: true,
+          isCurrent: true,
+        };
+        new_grid[element.i][element.j] = newNode;
+        setGrid(new_grid);
+        new_grid[element.i][element.j].isCurrent = false;
+      }, 30 * i);
+    }
+  };
+  const visualizeAstar = () => {
+    const startNode = grid[START_NODE_I][START_NODE_J];
+    const finishNode = grid[FINISH_NODE_I][FINISH_NODE_J];
+    let new_grid = grid.slice();
+    const visitedStack = astar(grid, startNode, finishNode);
+    const nodesInShortestPathAstar = getNodesInShortestPathAstar(finishNode);
+    animateAstar(visitedStack, nodesInShortestPathAstar);
   };
 
   ////
@@ -281,6 +333,7 @@ const PathfindingVisualizer = (props) => {
       </button>
       <button onClick={() => maze(0, width, 0, height, grid, 1)}>maze</button>
       <button onClick={() => visualizedfs()}>DFS</button>
+      <button onClick={() => visualizeAstar()}>Astar</button>
 
       {grid.map((row, rowId) => {
         return (
@@ -299,6 +352,11 @@ const PathfindingVisualizer = (props) => {
                 onMouseDown={handleMouseDown}
                 onMouseEnter={handleMouseEnter}
                 mode={element.mode}
+                isBacktracked={element.isBacktracked}
+                isCurrent={element.isCurrent}
+                g_cost={element.g_cost}
+                h_cost={element.h_cost}
+                f_cost={element.f_cost}
               ></Node>
             ))}
           </div>
